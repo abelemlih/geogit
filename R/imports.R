@@ -1,0 +1,2 @@
+#' @importFrom httr GET
+#'

@@ -1,0 +1,18 @@
+Package: geogit
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: A package version of the software from my project to understand github use in Africa.
+License: License: GPL (>=2)
+Encoding: UTF-8
+Depends: httr
+BugReports: https://github.com/abelemlih/geogit/issues
+RoxygenNote: 6.0.1
+Roxygen: list(markdown = TRUE)
+LazyData: true
+Suggests: knitr,
+    rmarkdown,
+    testthat
+VignetteBuilder: knitr
