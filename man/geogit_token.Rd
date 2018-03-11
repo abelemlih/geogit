@@ -18,8 +18,11 @@ You need a token to authenticate and access the Github API
 through your Github account.
 }
 \details{
-Authenticated account can process up to 5000 requests per hour,
-instead of 60 without authentication. To get a token, you need a github account (See vignette).
+Authenticated account can process up to 5000 requests per hour
+and 30 search requests per minute, instead of 60 requests per hour and 10 search
+request per minute without authentication. For more information,
+see https://developer.github.com/v3/#rate-limiting. To get a token,
+you need a github account (See vignette).
 }
 \examples{
 geogit_token("personal_acess_token")
