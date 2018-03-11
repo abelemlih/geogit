@@ -1,25 +1,28 @@
 #' Create a token to access GitHub API
 #'
-#' You need a token because ...
-#' This can be as long as needed.
+#' You need a token to authenticate and access the Github API
+#' through your Github account.
 #'
-#' @param github_access_token The string from your github settings ... blah blah
-#' If not provided, an anonymous token is generated.
+#' @param github_access_token The personal access token from your Github
+#' account's developer settings. If not provided, an unauthenticated token is generated.
 #'
-#' @details With an anonymous token, your access is limited to ...
-#' To get a token, you need a github account: See vignette.
+#' @details Authenticated account can process up to 5000 requests per hour,
+#' instead of 60 without authentication. To get a token, you need a github account (See vignette).
 #'
-#' @return A token object for use in other geogit_ functions.
+#' @return A token `list` for use in other geogit_ functions.
 #'
 #' @examples
-#' geogit_token("Something that looks right.")
+#' geogit_token("personal_acess_token")
 #'
 #' @export
-geogit_token <- function(github_access_token) {
-  say_hello("Ayoub")
-}
-
-# Just to show.
-say_hello <- function(name) {
-  paste("Hello,", name)
+geogit_token <- function(github_access_token = '') {
+  request_url <- paste("https://api.github.com/rate_limit", "?access_token=", github_access_token, sep = '')
+  api_response <- GET(request_url)
+  if (api_response$status_code != 200) {
+    message("Bad credentials: invalid Github personal access token")
+    return(invisible(NULL))
+  }
+  list("value" = github_access_token,
+       "authenticaded" = ifelse(nchar(github_access_token)==0, FALSE, TRUE),
+       "rate_limit" = content(api_response, "parsed")$rate$limit)
 }

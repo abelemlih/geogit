@@ -4,24 +4,24 @@
 \alias{geogit_token}
 \title{Create a token to access GitHub API}
 \usage{
-geogit_token(github_access_token)
+geogit_token(github_access_token = "")
 }
 \arguments{
-\item{github_access_token}{The string from your github settings ... blah blah
-If not provided, an anonymous token is generated.}
+\item{github_access_token}{The personal access token from your Github
+account's developer settings. If not provided, an unauthenticated token is generated.}
 }
 \value{
-A token object for use in other geogit_ functions.
+A token \code{list} for use in other geogit_ functions.
 }
 \description{
-You need a token because ...
-This can be as long as needed.
+You need a token to authenticate and access the Github API
+through your Github account.
 }
 \details{
-With an anonymous token, your access is limited to ...
-To get a token, you need a github account: See vignette.
+Authenticated account can process up to 5000 requests per hour,
+instead of 60 without authentication. To get a token, you need a github account (See vignette).
 }
 \examples{
-geogit_token("Something that looks right.")
+geogit_token("personal_acess_token")
 
 }
