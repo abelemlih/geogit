@@ -3,11 +3,18 @@ Explore Open Source Development on GitHub within a Location
 
 `geogit` is a package that facilitates retrieving tidy Github data to explore open source development within a specific location. The functions within this package are designed to facilitate importing information about users and repositories using the GitHub API.
 
+### Installation
+
+```{r}
+devtools::install_github("abelemlih/geogit")
+```
+
 ### Setup
 
 All the functions within `geogit` require a token to retrieve information from GitHub. A GitHub account is not needed to generate a token. However, tokens tied to a GitHub account can process a larger number of requests (5000 requests per hour, compared to 60 for unauthenticated users). To set the token:
 
 ```{r}
+library(geogit)
 tk <- geogit_token('') #unauthenticated token
 ```
 
@@ -86,3 +93,14 @@ detailed_Ghana_users %>%
 ```{r}
 geogit_remaining_requests(tk)
 ```
+### Future Work
+
+I am prioritizing the following:
+
+* Implementing better error handling and testing for the package
+
+* Implementing new features to facilitate exploring data about users and respositories on GitHub
+
+### Contributing
+
+Feel free to submit a pull request if you have any features/improvements to add to the package. You can also open an issue if you ecountered a problem while using the current core functionalities of the package.
