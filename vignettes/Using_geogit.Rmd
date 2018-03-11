@@ -1,5 +1,5 @@
 ---
-title: "Using geogit"
+title: "geogit"
 author: "Ayoub Belemlih"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 ```
 
 
-`geogit` is a package that aims to facilitate retrieving tidy Github data to explore open source development within a specific location. The functions within this package are designed to facilitate importing information about users and repositories using the GitHub API.
+`geogit` is a package that facilitates retrieving tidy Github data to explore open source development within a specific location. The functions within this package are designed to facilitate importing information about users and repositories using the GitHub API.
 
 ### Setup
 
@@ -34,18 +34,20 @@ tk <- geogit_token('') #unauthenticated token
 tk <- geogit_token("personal_github_token") #GitHub personal token
 ```
 
+`eval` is set to `FALSE` for all the chunks below to avoid running the API requests at each testing phase of this project. It is preferred to get a GitHub personal token and create an authenticated token before running the commands shown below.
+
 ### Retrieve Users
 
 `geogit_user` retrieves specific information about a user, like the number of public repositories or the the number of followers. To retrieve a single user by username:
 
-```{r}
+```{r, eval=FALSE}
 geogit_user("abelemlih", tk) %>% 
   select(login, created_at, bio, public_repos, public_gists, followers, following)
 ```
 
 `geogit_location` retrieves basic information about the users that match best the search by location query. The GitHub only allows access to the first 1000 search results, and the results are divided into pages. Each page can have a maximum of 1000 search results. To retrieve the first 100 users from a location, sorted by followers:
 
-```{r}
+```{r, eval=FALSE}
 geogit_location("Ghana", tk) %>% 
   select(login, html_url) %>%
   mutate(country = "Ghana") %>%
@@ -54,7 +56,7 @@ geogit_location("Ghana", tk) %>%
 
 The two functions can be used together to create a table that contains users that match best a location, with additional descriptive information like the number of followers or the number of public gists posted by the user:
 
-```{r}
+```{r, eval=FALSE}
 Ghana_usernames <- geogit_location("Ghana", tk)$login
 detailed_Ghana_users <- tibble()
 for (usr in Ghana_usernames) {
@@ -72,7 +74,7 @@ detailed_Ghana_users %>% head(10)
 
 `geogit_repos` facilitates retrieving information about a user's repositories. This is a core function that enables analyzing easily the type of projects a user creates or contributes to, their preferred programming language, the popularity of their repositories, etc. Repositories are also accessed using the same page system established for search results, and only 100 repositories can be accessed at the time. To retrieve a user's repositories by username, sorted by the last time they were updated:
 
-```{r}
+```{r, eval=FALSE}
 geogit_repos("hadley", tk, sort = "updated") %>%
   select(name, description, language, watchers, forks, open_issues)
 ```
@@ -95,8 +97,6 @@ detailed_Ghana_users %>%
   mutate(pref_lang = preferred_languages) %>%
   select(login, public_repos, pref_lang)
 ```
-
-The code chunk above was disabled because of the rate limit of the unautheticated token. It is recommended to use a personal access token from GitHub before running the code chunk above.
 
 ### API Rate Limit
 
