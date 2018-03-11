@@ -79,7 +79,7 @@ geogit_repos("hadley", tk, sort = "updated") %>%
 
 The functionality of `geogit_repos` can be combined with the results from `geogit_user` and `geogit_location` to create a table of users within a location and their "most used programming language" for instance. We could set the "most programming language" as the language that is tied to the highest number of projects within the last 100 projects a user created. Let's explore the most used programming languages of the 100 most followed GitHub users who are based in Ghana:
 
-```{r}
+```{r, eval = FALSE}
 preferred_languages <- c()
 for (usr in detailed_Ghana_users$login) {
   usr_lang <- 
@@ -95,6 +95,8 @@ detailed_Ghana_users %>%
   mutate(pref_lang = preferred_languages) %>%
   select(login, public_repos, pref_lang)
 ```
+
+The code chunk above was disabled because of the rate limit of the unautheticated token. It is recommended to use a personal access token from GitHub before running the code chunk above.
 
 ### API Rate Limit
 
