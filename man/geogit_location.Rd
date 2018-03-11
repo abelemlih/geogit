@@ -18,7 +18,7 @@ If not provided, the anonymous user token is used.}
 \code{followers}, \code{repositories}, or \code{joined} (account creation timestamp).}
 }
 \value{
-A data frame that contains the users that match the given location.
+A tibble that contains the users that match the given location.
 }
 \description{
 This function retrieves Github users from a specific location
@@ -34,8 +34,9 @@ This function is particulatly useful for retrieving the usernames that match a l
 To retrieve more information about a user, you can use \code{geogit_user}.
 }
 \examples{
-geogit_location("Morocco")
-geogit_location("Morocco", page = 2) #to retrieve the next 100 search results
-geogit_location("Morocco", sort = "repositories") #to sort by repositories instead of followers
+token <- geogit_token()
+geogit_location("Morocco", token)
+geogit_location("Morocco", token, page = 2)
+geogit_location("Morocco", token, sort = "repositories")
 
 }

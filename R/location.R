@@ -18,12 +18,13 @@
 #' This function is particulatly useful for retrieving the usernames that match a location.
 #' To retrieve more information about a user, you can use `geogit_user`.
 #'
-#' @return A data frame that contains the users that match the given location.
+#' @return A tibble that contains the users that match the given location.
 #'
 #' @examples
-#' geogit_location("Morocco")
-#' geogit_location("Morocco", page = 2) #to retrieve the next 100 search results
-#' geogit_location("Morocco", sort = "repositories") #to sort by repositories instead of followers
+#' token <- geogit_token()
+#' geogit_location("Morocco", token)
+#' geogit_location("Morocco", token, page = 2)
+#' geogit_location("Morocco", token, sort = "repositories")
 #'
 #' @export
 geogit_location <- function(location, token, page = 1, sort = 'followers') {
@@ -34,8 +35,10 @@ geogit_location <- function(location, token, page = 1, sort = 'followers') {
   request_url <- paste("https://api.github.com/search/users?q=type:user+repos:%3E0+location:", as.character(location),
                        "&per_page=100&sort=", sort,
                        "&page=",as.character(page),
-                       "&access_token=", token,
+                       "&access_token=", token$value,
                        sep = '')
   api_response <- content(GET(request_url), "parsed")
-  data.frame(api_response$items %>% bind_rows(), stringsAsFactors = FALSE)
+  api_response$items %>%
+    bind_rows() %>%
+    as_tibble()
 }
