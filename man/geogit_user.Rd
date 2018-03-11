@@ -19,7 +19,7 @@ A data frame that contains the given user's information.
 This function retrieves a Github user's public information
 }
 \details{
-#' All pieces of information provided by the Github API about the user are returned.
+All pieces of information provided by the Github API about the user are returned.
 }
 \examples{
 geogit_user("abelemlih")

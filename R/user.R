@@ -20,7 +20,3 @@ geogit_user <- function(github_user, token = '') {
     map(function(x) ifelse(is.null(x), NA, x))
   data.frame(api_response)
 }
-
-
-
-
