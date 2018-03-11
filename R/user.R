@@ -8,19 +8,20 @@
 #'
 #' @details All pieces of information provided by the Github API about the user are returned.
 #'
-#' @return A data frame that contains the given user's information.
+#' @return A tibble that contains the given user's information.
 #'
 #' @examples
-#' geogit_user("abelemlih")
+#' token <- geogit_token()
+#' geogit_user("abelemlih", token)
 #'
 #' @export
-geogit_user <- function(github_user, token) {
+geogit_user <- function(github_username, token) {
   if(typeof(token) != "list" || is.null(token$value)) {
     warning("Invalid token: a valid geogit_token is needed for this operation")
     return(invisible(NULL))
   }
-  request_url <- paste("https://api.github.com/users/", github_user, "?access_token=", token$value, sep = '')
+  request_url <- paste("https://api.github.com/users/", github_username, "?access_token=", token$value, sep = '')
   api_response <- content(GET(request_url), "parsed") %>%
     map(function(x) ifelse(is.null(x), NA, x))
-  data.frame(api_response, stringsAsFactors = FALSE)
+  as_tibble(api_response)
 }

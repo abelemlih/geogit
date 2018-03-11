@@ -4,16 +4,16 @@
 \alias{geogit_user}
 \title{Import user information from Github}
 \usage{
-geogit_user(github_user, token)
+geogit_user(github_username, token)
 }
 \arguments{
+\item{github_username}{Github user's username on the platform.}
+
 \item{token}{geogit_token that contains access token information.
 If not provided, the anonymous user token is used.}
-
-\item{github_username}{Github user's username on the platform.}
 }
 \value{
-A data frame that contains the given user's information.
+A tibble that contains the given user's information.
 }
 \description{
 This function retrieves a Github user's public information
@@ -22,6 +22,7 @@ This function retrieves a Github user's public information
 All pieces of information provided by the Github API about the user are returned.
 }
 \examples{
-geogit_user("abelemlih")
+token <- geogit_token()
+geogit_user("abelemlih", token)
 
 }
