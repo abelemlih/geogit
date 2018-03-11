@@ -5,9 +5,9 @@ Version: 0.1.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: A package version of the software from my project to understand github use in Africa.
-License: License: GPL (>=2)
+License: MIT License
 Encoding: UTF-8
-Depends: httr
+Depends: httr, tidyverse, lubridate
 BugReports: https://github.com/abelemlih/geogit/issues
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
