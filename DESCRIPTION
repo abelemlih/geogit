@@ -1,18 +1,16 @@
 Package: geogit
 Type: Package
-Title: Retrieve Github user information to explore open source developement within a location.
+Title: Explore Open Source Development on GitHub within a Location
 Version: 0.1.0
 Author: Ayoub Belemlih
 Maintainer: The package maintainer <abelemli@macalester.edu>
 Description: A package version of the software from my project to understand github use in Africa.
-License: MIT + file LICENSE
+License: MIT LICENSE
 Encoding: UTF-8
 Depends: R (>= 3.1), httr, dplyr, lubridate, tibble, purrr
 BugReports: https://github.com/abelemlih/geogit/issues
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
 LazyData: true
-Suggests: knitr,
-    rmarkdown,
-    testthat
+Suggests: knitr, rmarkdown, testthat
 VignetteBuilder: knitr
