@@ -1,6 +1,6 @@
 ---
 title: "Using geogit"
-author: "Vignette Author"
+author: "Ayoub Belemlih"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -12,60 +12,97 @@ vignette: >
 ```{r setup, include = FALSE}
 library(tidyverse)
 library(ggplot2)
+library(geogit)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
+
+`geogit` is a package that aims to facilitate retrieving tidy Github data to explore open source development within a specific location. The functions within this package are designed to facilitate importing information about users and repositories using the GitHub API.
+
+### Setup
+
+All the functions within `geogit` require a token to retrieve information from GitHub. A GitHub account is not needed to generate a token. However, tokens tied to a GitHub account can process a larger number of requests (5000 requests per hour, compared to 60 for unauthenticated users). To set the token:
+
 ```{r}
-ggplot(mtcars, aes(x = mpg, y = hp)) + geom_point()
+tk <- geogit_token('') #unauthenticated token
 ```
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
-
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
-
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r, eval=FALSE}
+tk <- geogit_token("personal_github_token") #GitHub personal token
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+### Retrieve Users
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+`geogit_user` retrieves specific information about a user, like the number of public repositories or the the number of followers. To retrieve a single user by username:
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
-
-## More Examples
-
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
-
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+```{r}
+geogit_user("abelemlih", tk) %>% 
+  select(login, created_at, bio, public_repos, public_gists, followers, following)
 ```
 
-Also a quote using `>`:
+`geogit_location` retrieves basic information about the users that match best the search by location query. The GitHub only allows access to the first 1000 search results, and the results are divided into pages. Each page can have a maximum of 1000 search results. To retrieve the first 100 users from a location, sorted by followers:
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+```{r}
+geogit_location("Ghana", tk) %>% 
+  select(login, html_url) %>%
+  mutate(country = "Ghana") %>%
+  head(10)
+```
+
+The two functions can be used together to create a table that contains users that match best a location, with additional descriptive information like the number of followers or the number of public gists posted by the user:
+
+```{r}
+Ghana_usernames <- geogit_location("Ghana", tk)$login
+detailed_Ghana_users <- tibble()
+for (usr in Ghana_usernames) {
+  usr_info <- 
+    geogit_user(usr, tk) %>% 
+    select(login, created_at, bio, public_repos, public_gists, followers, following)
+  detailed_Ghana_users <- 
+    detailed_Ghana_users %>% 
+    rbind(usr_info)
+}
+detailed_Ghana_users %>% head(10)
+```
+
+### Retrieve repositories
+
+`geogit_repos` facilitates retrieving information about a user's repositories. This is a core function that enables analyzing easily the type of projects a user creates or contributes to, their preferred programming language, the popularity of their repositories, etc. Repositories are also accessed using the same page system established for search results, and only 100 repositories can be accessed at the time. To retrieve a user's repositories by username, sorted by the last time they were updated:
+
+```{r}
+geogit_repos("hadley", tk, sort = "updated") %>%
+  select(name, description, language, watchers, forks, open_issues)
+```
+
+The functionality of `geogit_repos` can be combined with the results from `geogit_user` and `geogit_location` to create a table of users within a location and their "most used programming language" for instance. We could set the "most programming language" as the language that is tied to the highest number of projects within the last 100 projects a user created. Let's explore the most used programming languages of the 100 most followed GitHub users who are based in Ghana:
+
+```{r}
+preferred_languages <- c()
+for (usr in detailed_Ghana_users$login) {
+  usr_lang <- 
+    geogit_repos(usr, tk) %>%
+    group_by(language) %>%
+    summarise(total = n()) %>%
+    arrange(desc(total))
+  
+  preferred_languages <- c(preferred_languages, head(usr_lang, 1)$language)
+}
+
+detailed_Ghana_users %>% 
+  mutate(pref_lang = preferred_languages) %>%
+  select(login, public_repos, pref_lang)
+```
+
+### API Rate Limit
+
+`geogit` has a built-in functionality to easily retrieve the number of requests left per request category within the GitHub API structure: core, search, and graphql. To retrieve the rate limit table:
+
+```{r}
+geogit_remaining_requests(tk)
+```
+
+
+
