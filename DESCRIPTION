@@ -1,9 +1,9 @@
 Package: geogit
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Retrieve Github user information to explore open source developement within a location.
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: Ayoub Belemlih
+Maintainer: The package maintainer <abelemli@macalester.edu>
 Description: A package version of the software from my project to understand github use in Africa.
 License: MIT License
 Encoding: UTF-8
