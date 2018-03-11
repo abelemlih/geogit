@@ -7,7 +7,7 @@
 geogit_remaining_requests(token)
 }
 \arguments{
-\item{geogit_token}{The geogit_token used to retrieve data from Github}
+\item{token}{The geogit_token used to retrieve data from Github}
 }
 \value{
 A dataframe with information about the number of requests available
@@ -15,6 +15,10 @@ for each component of the Github API.
 }
 \description{
 Retrieve the number of remaining Github API requests available
+}
+\details{
+There are three types of request categories within the Github API:
+\code{core}, \code{search}, and \code{graphql}.
 }
 \examples{
 token <- geogit_token()

@@ -1,8 +1,9 @@
 #' Retrieve the number of remaining Github API requests available
 #'
-#' @param geogit_token The geogit_token used to retrieve data from Github
+#' @param token The geogit_token used to retrieve data from Github
 #'
-#' @details
+#' @details There are three types of request categories within the Github API:
+#' `core`, `search`, and `graphql`.
 #'
 #' @return A dataframe with information about the number of requests available
 #' for each component of the Github API.
@@ -19,9 +20,9 @@ geogit_remaining_requests <- function(token) {
   }
   request_url <- paste("https://api.github.com/rate_limit", "?access_token=", token$value, sep = '')
   api_response <- content(GET(request_url), "parsed")
-  data.frame(api_response$resources %>%
-               bind_rows() %>%
-               mutate(type = names(api_response$resources),
-                      reset = lubridate::as_datetime(reset)) %>%
-               select(type, limit, remaining, reset))
+  api_response$resources %>%
+    bind_rows() %>%
+    mutate(type = names(api_response$resources), reset = lubridate::as_datetime(reset)) %>%
+    select(type, limit, remaining, reset) %>%
+    as_tibble()
 }
