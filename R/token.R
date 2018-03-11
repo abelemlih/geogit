@@ -6,8 +6,11 @@
 #' @param github_access_token The personal access token from your Github
 #' account's developer settings. If not provided, an unauthenticated token is generated.
 #'
-#' @details Authenticated account can process up to 5000 requests per hour,
-#' instead of 60 without authentication. To get a token, you need a github account (See vignette).
+#' @details Authenticated account can process up to 5000 requests per hour
+#' and 30 search requests per minute, instead of 60 requests per hour and 10 search
+#' request per minute without authentication. For more information,
+#' see https://developer.github.com/v3/#rate-limiting. To get a token,
+#' you need a github account (See vignette).
 #'
 #' @return A token `list` for use in other geogit_ functions.
 #'
