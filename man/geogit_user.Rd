@@ -4,7 +4,7 @@
 \alias{geogit_user}
 \title{Import user information from Github}
 \usage{
-geogit_user(github_user, token = "")
+geogit_user(github_user, token)
 }
 \arguments{
 \item{token}{geogit_token that contains access token information.

@@ -26,12 +26,16 @@
 #' geogit_location("Morocco", sort = "repositories") #to sort by repositories instead of followers
 #'
 #' @export
-geogit_location <- function(location, token = '', page = 1, sort = 'followers') {
+geogit_location <- function(location, token, page = 1, sort = 'followers') {
+  if(typeof(token) != "list" || is.null(token$value)) {
+    warning("Invalid token: a valid geogit_token is needed for this operation")
+    return(invisible(NULL))
+  }
   request_url <- paste("https://api.github.com/search/users?q=type:user+repos:%3E0+location:", as.character(location),
                        "&per_page=100&sort=", sort,
                        "&page=",as.character(page),
                        "&access_token=", token,
                        sep = '')
   api_response <- content(GET(request_url), "parsed")
-  data.frame(api_response$items %>% bind_rows())
+  data.frame(api_response$items %>% bind_rows(), stringsAsFactors = FALSE)
 }

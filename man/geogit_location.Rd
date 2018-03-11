@@ -4,7 +4,7 @@
 \alias{geogit_location}
 \title{Import Github users from a specific location}
 \usage{
-geogit_location(location, token = "", page = 1, sort = "followers")
+geogit_location(location, token, page = 1, sort = "followers")
 }
 \arguments{
 \item{location}{Desired location to explore e.g. Morocco}

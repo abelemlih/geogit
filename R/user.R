@@ -14,9 +14,13 @@
 #' geogit_user("abelemlih")
 #'
 #' @export
-geogit_user <- function(github_user, token = '') {
-  request_url <- paste("https://api.github.com/users/", github_user, "?access_token=", token, sep = '')
+geogit_user <- function(github_user, token) {
+  if(typeof(token) != "list" || is.null(token$value)) {
+    warning("Invalid token: a valid geogit_token is needed for this operation")
+    return(invisible(NULL))
+  }
+  request_url <- paste("https://api.github.com/users/", github_user, "?access_token=", token$value, sep = '')
   api_response <- content(GET(request_url), "parsed") %>%
     map(function(x) ifelse(is.null(x), NA, x))
-  data.frame(api_response)
+  data.frame(api_response, stringsAsFactors = FALSE)
 }
