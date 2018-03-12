@@ -14,12 +14,11 @@ devtools::install_github("abelemlih/geogit")
 All the functions within `geogit` require a token to retrieve information from GitHub. A GitHub account is not needed to generate a token. However, tokens tied to a GitHub account can process a larger number of requests (5000 requests per hour, compared to 60 for unauthenticated users). To set the token:
 
 ```{r}
-library(geogit)
 tk <- geogit_token('') #unauthenticated token
 ```
 
 ```{r, eval=FALSE}
-tk <- geogit_token("personal_github_token") #GitHub personal token
+tk <- geogit_token(Sys.getenv("GITHUB_TK")) #GitHub personal token
 ```
 
 `eval` is set to `FALSE` for all the chunks below to avoid running the API requests at each testing phase of this project. It is preferred to get a GitHub personal token and create an authenticated token before running the commands shown below.
@@ -45,17 +44,17 @@ geogit_location("Ghana", tk) %>%
 The two functions can be used together to create a table that contains users that match best a location, with additional descriptive information like the number of followers or the number of public gists posted by the user:
 
 ```{r, eval=FALSE}
-Ghana_usernames <- geogit_location("Ghana", tk)$login
-detailed_Ghana_users <- tibble()
-for (usr in Ghana_usernames) {
+ghana_usernames <- geogit_location("Ghana", tk)$login
+ghana_users <- tibble()
+for (usr in ghana_usernames) {
   usr_info <- 
     geogit_user(usr, tk) %>% 
     select(login, created_at, bio, public_repos, public_gists, followers, following)
-  detailed_Ghana_users <- 
-    detailed_Ghana_users %>% 
+  ghana_users <- 
+    ghana_users %>% 
     rbind(usr_info)
 }
-detailed_Ghana_users %>% head(10)
+ghana_users %>% head(10)
 ```
 
 ### Retrieve repositories
@@ -70,20 +69,23 @@ geogit_repos("hadley", tk, sort = "updated") %>%
 The functionality of `geogit_repos` can be combined with the results from `geogit_user` and `geogit_location` to create a table of users within a location and their "most used programming language" for instance. We could set the "most programming language" as the language that is tied to the highest number of projects within the last 100 projects a user created. Let's explore the most used programming languages of the 100 most followed GitHub users who are based in Ghana:
 
 ```{r, eval = FALSE}
-preferred_languages <- c()
-for (usr in detailed_Ghana_users$login) {
-  usr_lang <- 
-    geogit_repos(usr, tk) %>%
+get_top_lang <- function(usr_login) {
+  geogit_repos(usr_login, tk) %>%
+    filter(owner == usr_login) %>%
     group_by(language) %>%
     summarise(total = n()) %>%
-    arrange(desc(total))
-  
-  preferred_languages <- c(preferred_languages, head(usr_lang, 1)$language)
+    arrange(desc(total)) %>%
+    pull("language") %>%
+    extract(1)
 }
 
-detailed_Ghana_users %>% 
-  mutate(pref_lang = preferred_languages) %>%
-  select(login, public_repos, pref_lang)
+ghana_users$top_lang <- 
+  ghana_users$login %>% 
+  map(get_top_lang) %>%
+  flatten_chr()
+
+ghana_users %>% 
+  select(login, public_repos, top_lang)
 ```
 
 ### API Rate Limit
@@ -93,6 +95,7 @@ detailed_Ghana_users %>%
 ```{r}
 geogit_remaining_requests(tk)
 ```
+
 ### Future Work
 
 I am prioritizing the following:
