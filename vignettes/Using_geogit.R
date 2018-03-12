@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 tk <- geogit_token('') #unauthenticated token
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  tk <- geogit_token("personal_github_token") #GitHub personal token
+#  tk <- geogit_token(Sys.getenv("GITHUB_TK")) #GitHub personal token
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  geogit_user("abelemlih", tk) %>%
@@ -24,37 +24,40 @@ tk <- geogit_token('') #unauthenticated token
 #    head(10)
 
 ## ---- eval=FALSE---------------------------------------------------------
-#  Ghana_usernames <- geogit_location("Ghana", tk)$login
-#  detailed_Ghana_users <- tibble()
-#  for (usr in Ghana_usernames) {
+#  ghana_usernames <- geogit_location("Ghana", tk)$login
+#  ghana_users <- tibble()
+#  for (usr in ghana_usernames) {
 #    usr_info <-
 #      geogit_user(usr, tk) %>%
 #      select(login, created_at, bio, public_repos, public_gists, followers, following)
-#    detailed_Ghana_users <-
-#      detailed_Ghana_users %>%
+#    ghana_users <-
+#      ghana_users %>%
 #      rbind(usr_info)
 #  }
-#  detailed_Ghana_users %>% head(10)
+#  ghana_users %>% head(10)
 
 ## ---- eval=FALSE---------------------------------------------------------
 #  geogit_repos("hadley", tk, sort = "updated") %>%
 #    select(name, description, language, watchers, forks, open_issues)
 
 ## ---- eval = FALSE-------------------------------------------------------
-#  preferred_languages <- c()
-#  for (usr in detailed_Ghana_users$login) {
-#    usr_lang <-
-#      geogit_repos(usr, tk) %>%
+#  get_top_lang <- function(usr_login) {
+#    geogit_repos(usr_login, tk) %>%
+#      filter(owner == usr_login) %>%
 #      group_by(language) %>%
 #      summarise(total = n()) %>%
-#      arrange(desc(total))
-#  
-#    preferred_languages <- c(preferred_languages, head(usr_lang, 1)$language)
+#      arrange(desc(total)) %>%
+#      pull("language") %>%
+#      extract(1)
 #  }
 #  
-#  detailed_Ghana_users %>%
-#    mutate(pref_lang = preferred_languages) %>%
-#    select(login, public_repos, pref_lang)
+#  ghana_users$top_lang <-
+#    ghana_users$login %>%
+#    map(get_top_lang) %>%
+#    flatten_chr()
+#  
+#  ghana_users %>%
+#    select(login, public_repos, top_lang)
 
 ## ------------------------------------------------------------------------
 geogit_remaining_requests(tk)

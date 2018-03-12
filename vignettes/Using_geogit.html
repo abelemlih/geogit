@@ -79,7 +79,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h3>Setup</h3>
 <p>All the functions within <code>geogit</code> require a token to retrieve information from GitHub. A GitHub account is not needed to generate a token. However, tokens tied to a GitHub account can process a larger number of requests (5000 requests per hour, compared to 60 for unauthenticated users). To set the token:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tk &lt;-<span class="st"> </span><span class="kw">geogit_token</span>(<span class="st">''</span>) <span class="co">#unauthenticated token</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tk &lt;-<span class="st"> </span><span class="kw">geogit_token</span>(<span class="st">&quot;personal_github_token&quot;</span>) <span class="co">#GitHub personal token</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tk &lt;-<span class="st"> </span><span class="kw">geogit_token</span>(<span class="kw">Sys.getenv</span>(<span class="st">&quot;GITHUB_TK&quot;</span>)) <span class="co">#GitHub personal token</span></code></pre></div>
 <p><code>eval</code> is set to <code>FALSE</code> for all the chunks below to avoid running the API requests at each testing phase of this project. It is preferred to get a GitHub personal token and create an authenticated token before running the commands shown below.</p>
 </div>
 <div id="retrieve-users" class="section level3">
@@ -93,17 +93,17 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">country =</span> <span class="st">&quot;Ghana&quot;</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">head</span>(<span class="dv">10</span>)</code></pre></div>
 <p>The two functions can be used together to create a table that contains users that match best a location, with additional descriptive information like the number of followers or the number of public gists posted by the user:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Ghana_usernames &lt;-<span class="st"> </span><span class="kw">geogit_location</span>(<span class="st">&quot;Ghana&quot;</span>, tk)<span class="op">$</span>login
-detailed_Ghana_users &lt;-<span class="st"> </span><span class="kw">tibble</span>()
-<span class="cf">for</span> (usr <span class="cf">in</span> Ghana_usernames) {
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ghana_usernames &lt;-<span class="st"> </span><span class="kw">geogit_location</span>(<span class="st">&quot;Ghana&quot;</span>, tk)<span class="op">$</span>login
+ghana_users &lt;-<span class="st"> </span><span class="kw">tibble</span>()
+<span class="cf">for</span> (usr <span class="cf">in</span> ghana_usernames) {
   usr_info &lt;-<span class="st"> </span>
 <span class="st">    </span><span class="kw">geogit_user</span>(usr, tk) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">select</span>(login, created_at, bio, public_repos, public_gists, followers, following)
-  detailed_Ghana_users &lt;-<span class="st"> </span>
-<span class="st">    </span>detailed_Ghana_users <span class="op">%&gt;%</span><span class="st"> </span>
+  ghana_users &lt;-<span class="st"> </span>
+<span class="st">    </span>ghana_users <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">    </span><span class="kw">rbind</span>(usr_info)
 }
-detailed_Ghana_users <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>(<span class="dv">10</span>)</code></pre></div>
+ghana_users <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">head</span>(<span class="dv">10</span>)</code></pre></div>
 </div>
 <div id="retrieve-repositories" class="section level3">
 <h3>Retrieve repositories</h3>
@@ -111,20 +111,23 @@ detailed_Ghana_users <span class="op">%&gt;%</span><span class="st"> </span><spa
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">geogit_repos</span>(<span class="st">&quot;hadley&quot;</span>, tk, <span class="dt">sort =</span> <span class="st">&quot;updated&quot;</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">select</span>(name, description, language, watchers, forks, open_issues)</code></pre></div>
 <p>The functionality of <code>geogit_repos</code> can be combined with the results from <code>geogit_user</code> and <code>geogit_location</code> to create a table of users within a location and their “most used programming language” for instance. We could set the “most programming language” as the language that is tied to the highest number of projects within the last 100 projects a user created. Let’s explore the most used programming languages of the 100 most followed GitHub users who are based in Ghana:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">preferred_languages &lt;-<span class="st"> </span><span class="kw">c</span>()
-<span class="cf">for</span> (usr <span class="cf">in</span> detailed_Ghana_users<span class="op">$</span>login) {
-  usr_lang &lt;-<span class="st"> </span>
-<span class="st">    </span><span class="kw">geogit_repos</span>(usr, tk) <span class="op">%&gt;%</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">get_top_lang &lt;-<span class="st"> </span><span class="cf">function</span>(usr_login) {
+  <span class="kw">geogit_repos</span>(usr_login, tk) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">filter</span>(owner <span class="op">==</span><span class="st"> </span>usr_login) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">group_by</span>(language) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">summarise</span>(<span class="dt">total =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(total))
-  
-  preferred_languages &lt;-<span class="st"> </span><span class="kw">c</span>(preferred_languages, <span class="kw">head</span>(usr_lang, <span class="dv">1</span>)<span class="op">$</span>language)
+<span class="st">    </span><span class="kw">arrange</span>(<span class="kw">desc</span>(total)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">pull</span>(<span class="st">&quot;language&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">extract</span>(<span class="dv">1</span>)
 }
 
-detailed_Ghana_users <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pref_lang =</span> preferred_languages) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(login, public_repos, pref_lang)</code></pre></div>
+ghana_users<span class="op">$</span>top_lang &lt;-<span class="st"> </span>
+<span class="st">  </span>ghana_users<span class="op">$</span>login <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">map</span>(get_top_lang) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">flatten_chr</span>()
+
+ghana_users <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(login, public_repos, top_lang)</code></pre></div>
 </div>
 <div id="api-rate-limit" class="section level3">
 <h3>API Rate Limit</h3>
@@ -133,9 +136,9 @@ detailed_Ghana_users <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="co">#&gt; # A tibble: 3 x 4</span>
 <span class="co">#&gt;   type    limit remaining reset              </span>
 <span class="co">#&gt;   &lt;chr&gt;   &lt;int&gt;     &lt;int&gt; &lt;dttm&gt;             </span>
-<span class="co">#&gt; 1 core       60        60 2018-03-12 09:27:46</span>
-<span class="co">#&gt; 2 search     10        10 2018-03-12 08:28:46</span>
-<span class="co">#&gt; 3 graphql     0         0 2018-03-12 09:27:46</span></code></pre></div>
+<span class="co">#&gt; 1 core       60         0 2018-03-12 09:28:49</span>
+<span class="co">#&gt; 2 search     10        10 2018-03-12 09:00:56</span>
+<span class="co">#&gt; 3 graphql     0         0 2018-03-12 09:59:56</span></code></pre></div>
 </div>
 
 
