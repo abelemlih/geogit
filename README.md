@@ -33,7 +33,7 @@ geogit_user("abelemlih", tk) %>%
   select(login, created_at, bio, public_repos, public_gists, followers, following)
 ```
 
-`geogit_location` retrieves basic information about the users that match best the search by location query. The GitHub only allows access to the first 1000 search results, and the results are divided into pages. Each page can have a maximum of 1000 search results. To retrieve the first 100 users from a location, sorted by followers:
+`geogit_location` retrieves basic information about the users that match best the search by location query. GitHub API only allows access to the first 1000 search results, and the results are divided into pages. Each page can have a maximum of 1000 search results. To retrieve the first 100 users from a location, sorted by followers:
 
 ```{r, eval=FALSE}
 geogit_location("Ghana", tk) %>% 
