@@ -1,0 +1,143 @@
+---
+title: "Case study: Norway"
+author: "Ayoub Belemlih"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using geogit}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+library(ggplot2)
+library(geogit)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In this example, I will retrieve data about the 300 most followed users in Norway and visualize some characteristics of their repositories.
+
+Note: `eval` will be set to FALSE for the code chunks below. I suggest adding a GitHub personal access token to increase the API rate limit before running these chunks.
+
+### Import Data
+
+Import the usernames of the 300 most followed users in Norway:
+
+```{r, eval = FALSE}
+tk <- geogit_token(Sys.getenv("GITHUB_TK"))
+
+norway_usernames <-
+  geogit_location("Norway", tk, page = 1) %>%
+  rbind(geogit_location("Norway", tk, page = 2)) %>%
+  rbind(geogit_location("Norway", tk, page = 3))
+
+norway_usernames <- norway_usernames$login
+```
+
+Add details to each user from `norway_users`
+
+```{r, eval=FALSE}
+norway_users <- tibble()
+for (usr in norway_usernames) {
+  usr_info <- 
+    geogit_user(usr, tk) %>% 
+    select(login, created_at, public_repos, followers, following)
+  norway_users <- 
+    norway_users %>% 
+    rbind(usr_info)
+}
+norway_users %>% head(10)
+```
+
+Import the repositories tied to the users in `norway_users` (A maximum of 100 repositories per user):
+
+```{r, eval=FALSE}
+norway_users_repos <- tibble()
+for (usr in norway_users$login) {
+  norway_users_repos <- 
+    norway_users_repos %>%
+    rbind(geogit_repos(usr, tk))
+}
+```
+
+Add the top language of each user, defining top language as the programming language a user used the most in the last 100 repositories they created:
+
+```{r, eval=FALSE}
+get_top_lang <- function(usr_login) {
+  norway_users_repos %>%
+    filter(owner == usr_login) %>%
+    group_by(language) %>%
+    summarise(total = n()) %>%
+    arrange(desc(total)) %>%
+    pull("language") %>%
+    extract(1)
+}
+
+norway_users$top_lang <- 
+  norway_users$login %>% 
+  map(get_top_lang) %>%
+  flatten_chr()
+```
+
+Add the total number of stars a user received across all the repositories they created:
+
+```{r, eval=FALSE}
+get_stars <- function(usr_login) {
+  norway_users_repos %>%
+    filter(owner == usr_login & fork == FALSE) %>%
+    pull("stargazers_count") %>%
+    sum()
+}
+
+norway_users$total_stars <- 
+  norway_users$login %>% 
+  map(get_stars) %>%
+  flatten_int()
+```
+
+### Visualizations
+
+30 most "starred" users in Norway (sorting by total number of stars across all repositories):
+
+```{r, eval=FALSE}
+norway_users %>%
+  arrange(desc(total_stars)) %>%
+  head(30) %>%
+  ggplot(aes(x = reorder(login, total_stars), y = total_stars)) + 
+    geom_bar(fill = "#228B22", stat = "identity") +
+    labs(title = "Most Starred Users in Norway", x = "Usernames", y = "Number of Stars") +
+    coord_flip()
+```
+
+30 most followed GitHub users in Norway:
+
+```{r, eval=FALSE}
+norway_users %>%
+  arrange(desc(followers)) %>%
+  head(30) %>%
+  ggplot(aes(x = reorder(login, followers), y = followers)) + 
+    geom_bar(fill = "#228B22", stat = "identity") +
+    labs(title = "Most Followed Users in Norway", x = "Usernames", y = "Number of Followers") +
+    coord_flip()
+```
+
+30 most popular languages in open source development in Norway, as measured by the most used language `top_lang` for each user:
+
+```{r, eval=FALSE}
+norway_users %>%
+  filter(!is.na(top_lang)) %>%
+  group_by(top_lang) %>%
+  summarise(total = n()) %>%
+  arrange(desc(total)) %>%
+  head(30) %>%
+  ggplot(aes(x = reorder(top_lang, total), y = total)) + 
+    geom_bar(fill = "#228B22", stat = "identity") +
+    labs(title = "Most Popular Programming Languages in Norway", x = "Programming Languages", y = "Number of Users") +
+    coord_flip()
+```
+
+
