@@ -5,7 +5,7 @@ Explore Open Source Development on GitHub within a Location
 
 ### Installation
 
-```{r}
+```r
 devtools::install_github("abelemlih/geogit")
 ```
 
@@ -13,11 +13,11 @@ devtools::install_github("abelemlih/geogit")
 
 All the functions within `geogit` require a token to retrieve information from GitHub. A GitHub account is not needed to generate a token. However, tokens tied to a GitHub account can process a larger number of requests (5000 requests per hour, compared to 60 for unauthenticated users). To set the token:
 
-```{r}
+```r
 tk <- geogit_token('') #unauthenticated token
 ```
 
-```{r, eval=FALSE}
+```r
 tk <- geogit_token(Sys.getenv("GITHUB_TK")) #GitHub personal token
 ```
 
@@ -27,14 +27,14 @@ tk <- geogit_token(Sys.getenv("GITHUB_TK")) #GitHub personal token
 
 `geogit_user` retrieves specific information about a user, like the number of public repositories or the the number of followers. To retrieve a single user by username:
 
-```{r, eval=FALSE}
+```r
 geogit_user("abelemlih", tk) %>% 
   select(login, created_at, bio, public_repos, public_gists, followers, following)
 ```
 
 `geogit_location` retrieves basic information about the users that match best the search by location query. GitHub API only allows access to the first 1000 search results, and the results are divided into pages. Each page can have a maximum of 1000 search results. To retrieve the first 100 users from a location, sorted by followers:
 
-```{r, eval=FALSE}
+```r
 geogit_location("Ghana", tk) %>% 
   select(login, html_url) %>%
   mutate(country = "Ghana") %>%
@@ -43,7 +43,7 @@ geogit_location("Ghana", tk) %>%
 
 The two functions can be used together to create a table that contains users that match best a location, with additional descriptive information like the number of followers or the number of public gists posted by the user:
 
-```{r, eval=FALSE}
+```r
 ghana_usernames <- geogit_location("Ghana", tk)$login
 ghana_users <- tibble()
 for (usr in ghana_usernames) {
@@ -61,14 +61,14 @@ ghana_users %>% head(10)
 
 `geogit_repos` facilitates retrieving information about a user's repositories. This is a core function that enables analyzing easily the type of projects a user creates or contributes to, their preferred programming language, the popularity of their repositories, etc. Repositories are also accessed using the same page system established for search results, and only 100 repositories can be accessed at the time. To retrieve a user's repositories by username, sorted by the last time they were updated:
 
-```{r, eval=FALSE}
+```r
 geogit_repos("hadley", tk, sort = "updated") %>%
   select(name, description, language, watchers, forks, open_issues)
 ```
 
 The functionality of `geogit_repos` can be combined with the results from `geogit_user` and `geogit_location` to create a table of users within a location and their "most used programming language" for instance. We could set the "most programming language" as the language that is tied to the highest number of projects within the last 100 projects a user created. Let's explore the most used programming languages of the 100 most followed GitHub users who are based in Ghana:
 
-```{r, eval = FALSE}
+```r
 get_top_lang <- function(usr_login) {
   geogit_repos(usr_login, tk) %>%
     filter(owner == usr_login) %>%
@@ -92,7 +92,7 @@ ghana_users %>%
 
 `geogit` has a built-in functionality to easily retrieve the number of requests left per request category within the GitHub API structure: core, search, and graphql. To retrieve the rate limit table:
 
-```{r}
+```r
 geogit_remaining_requests(tk)
 ```
 
