@@ -21,7 +21,7 @@ tk <- geogit_token('') #unauthenticated token
 tk <- geogit_token(Sys.getenv("GITHUB_TK")) #GitHub personal token
 ```
 
-`eval` is set to `FALSE` for all the chunks below to avoid running the API requests at each testing phase of this project. It is preferred to get a GitHub personal token and create an authenticated token before running the commands shown below.
+It is preferred to get a GitHub personal token and create an authenticated token before running the commands shown below.
 
 ### Retrieve Users
 
